@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>利用規約 爆速読了チャレンジ</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    font-family: "Segoe UI", "Yu Gothic UI", "Meiryo", sans-serif;
+    background: linear-gradient(135deg, #1e5799 0%, #2989d8 50%, #207cca 100%);
+    overflow: hidden;
+    user-select: none;
+  }
+
+  #desktop {
+    position: relative;
+    width: 100%;
+    height: calc(100% - 40px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #taskbar {
+    position: absolute;
+    bottom: 0; left: 0; width: 100%; height: 40px;
+    background: linear-gradient(to bottom, #1c3f66, #0f2540);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 12px;
+    color: #dbe9ff;
+    font-size: 13px;
+    border-top: 1px solid #0a1c30;
+  }
+  #taskbar .start { font-weight: bold; color: #fff; }
+
+  .screen {
+    color: #fff;
+    text-align: center;
+    max-width: 520px;
+  }
+  .screen h1 { font-size: 34px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); margin-bottom: 6px; }
+  .screen p {
+    line-height: 1.8; font-size: 15px;
+    background: rgba(0,0,0,0.25);
+    padding: 14px 18px; border-radius: 8px;
+  }
+  .screen button {
+    margin-top: 18px; font-size: 18px; padding: 10px 28px;
+    border: none; border-radius: 4px;
+    background: linear-gradient(to bottom, #4facfe, #00a1ff);
+    color: #fff; font-weight: bold; cursor: pointer;
+    box-shadow: 0 3px 0 #0077cc;
+  }
+  .screen button:active { box-shadow: 0 1px 0 #0077cc; transform: translateY(2px); }
+  .hidden { display: none !important; }
+
+  /* installer-style window */
+  .installer {
+    width: 560px;
+    background: #ece9e0;
+    border: 1px solid #7a7a7a;
+    box-shadow: 4px 4px 20px rgba(0,0,0,0.5);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .installer .titlebar {
+    background: linear-gradient(to right, #2a6bd6, #4a90e2);
+    color: #fff; font-size: 14px; font-weight: bold;
+    padding: 8px 10px; display: flex; justify-content: space-between;
+  }
+  .installer .titlebar .x { background: #d64545; padding: 0 8px; border-radius: 2px; font-size: 12px; }
+  .installer .content { padding: 16px 18px 10px; }
+  .installer .content h2 { margin: 0 0 8px; font-size: 16px; color: #1a1a1a; }
+  .installer .roundtag { font-size: 12px; color: #555; margin-bottom: 8px; }
+
+  .termsbox {
+    height: 260px;
+    overflow-y: scroll;
+    border: 1px solid #999;
+    background: #fff;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    line-height: 1.9;
+    color: #222;
+    white-space: pre-wrap;
+  }
+  .termsbox p { margin: 0 0 12px; }
+
+  .progresswrap {
+    margin-top: 8px; height: 8px; background: #ccc; border-radius: 4px; overflow: hidden;
+  }
+  .progressbar { height: 100%; width: 0%; background: linear-gradient(to right, #4facfe, #00a1ff); transition: width 0.1s; }
+
+  .agreearea {
+    margin-top: 10px; font-size: 13px; color: #333;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .installer .footer {
+    padding: 10px 18px; display: flex; justify-content: flex-end; gap: 8px;
+    background: #ddd9cf; border-top: 1px solid #bbb;
+  }
+  .installer .footer button {
+    font-size: 13px; padding: 6px 18px; border: 1px solid #888; border-radius: 3px;
+    background: linear-gradient(to bottom, #fefefe, #dcdcdc); cursor: pointer;
+  }
+  .installer .footer button:disabled { color: #999; cursor: not-allowed; opacity: 0.6; }
+
+  /* quiz overlay */
+  #quizOverlay {
+    position: absolute; top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.55);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 500;
+  }
+  .quizbox {
+    width: 420px; background: #ece9e0; border: 1px solid #7a7a7a;
+    box-shadow: 4px 4px 20px rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden;
+  }
+  .quizbox .titlebar {
+    background: linear-gradient(to right, #a11d1d, #d64545); color: #fff;
+    font-weight: bold; font-size: 14px; padding: 8px 10px;
+  }
+  .quizbox .qcontent { padding: 16px 18px; }
+  .quizbox .qcontent p { font-size: 14px; color: #222; line-height: 1.6; }
+  .choice {
+    display: block; width: 100%; text-align: left;
+    margin: 6px 0; padding: 8px 12px; font-size: 13.5px;
+    border: 1px solid #888; border-radius: 3px; background: #fff; cursor: pointer;
+  }
+  .choice:hover { background: #eef5ff; }
+  .choice.correct { background: #d2f7d2 !important; border-color: #3ea23e; }
+  .choice.wrong { background: #f7d2d2 !important; border-color: #a23e3e; }
+
+  .feedback { padding: 14px 18px; font-size: 14px; }
+  .feedback .roundscore { font-size: 22px; font-weight: bold; margin: 6px 0; }
+  .feedback button {
+    margin-top: 10px; font-size: 14px; padding: 8px 22px;
+    border: none; border-radius: 4px; background: linear-gradient(to bottom, #4facfe, #00a1ff);
+    color: #fff; font-weight: bold; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div id="desktop">
+
+  <div id="startScreen" class="screen">
+    <h1>利用規約 爆速読了チャレンジ</h1>
+    <p>
+      毎ラウンド、でたらめな利用規約(全10条)が表示される。<br>
+      一番下までスクロールしないと「次へ」は押せない。<br>
+      「次へ」を押すと、規約の中身についての4択クイズが1問出る。<br><br>
+      正解 → 読了から解答までの速さでスコア加算<br>
+      不正解 → そのラウンドは0点<br><br>
+      全3ラウンドの合計点で勝負。ちゃんと読め。
+    </p>
+    <button id="startBtn">スタート</button>
+  </div>
+
+  <div id="gameScreen" class="hidden" style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+    <div class="installer">
+      <div class="titlebar">
+        <span>セットアップ ウィザード - ご利用規約への同意</span>
+        <span class="x">×</span>
+      </div>
+      <div class="content">
+        <div class="roundtag" id="roundTag">第1 / 3 ラウンド</div>
+        <h2>下記の内容をよくお読みの上、同意してください。</h2>
+        <div class="termsbox" id="termsBox"></div>
+        <div class="progresswrap"><div class="progressbar" id="progressBar"></div></div>
+        <div class="agreearea">
+          <input type="checkbox" id="agreeCheck" disabled>
+          <label for="agreeCheck">上記の規約内容を読み、同意します</label>
+        </div>
+      </div>
+      <div class="footer">
+        <button disabled>戻る</button>
+        <button id="nextBtn" disabled>次へ</button>
+        <button disabled>キャンセル</button>
+      </div>
+    </div>
+
+    <div id="quizOverlay" class="hidden">
+      <div class="quizbox">
+        <div class="titlebar">確認クイズ</div>
+        <div class="qcontent" id="qcontent">
+          <p id="questionText"></p>
+          <div id="choicesWrap"></div>
+        </div>
+        <div class="feedback hidden" id="feedbackWrap">
+          <div id="feedbackText"></div>
+          <div class="roundscore" id="roundScoreText"></div>
+          <button id="continueBtn">次へ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="endScreen" class="screen hidden">
+    <h1>結果</h1>
+    <p id="resultText"></p>
+    <button id="retryBtn">もう一回</button>
+  </div>
+
+</div>
+
+<div id="taskbar">
+  <div class="start">■ スタート</div>
+  <div id="clock">00:00:00</div>
+</div>
+
+<script>
+function randInt(min, max, step) {
+  step = step || 1;
+  const n = Math.floor(Math.random() * ((max - min) / step + 1));
+  return min + n * step;
+}
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const CLAUSE_TEMPLATES = [
+  {
+    title: "退会金",
+    type: "number", min: 3000, max: 98000, step: 1000, unit: "円",
+    text: v => `本サービスを退会する場合、理由の如何を問わずユーザーは退会金として金${v}円を運営に支払うものとする。`,
+    question: "退会する場合に支払う「退会金」はいくらとされていた？"
+  },
+  {
+    title: "問い合わせ返信義務",
+    type: "number", min: 1, max: 72, step: 1, unit: "時間",
+    text: v => `ユーザーは運営からの問い合わせに対し、${v}時間以内に返信しなければならない。返信がない場合、自動的に規約違反とみなされる。`,
+    question: "運営からの問い合わせに対する返信期限は何時間以内とされていた？"
+  },
+  {
+    title: "飼育禁止動物",
+    type: "word", pool: ["ペンギン", "ライオン", "ワニ", "フラミンゴ", "ラクダ", "カバ", "シャチ"],
+    text: v => `ユーザーは本サービス利用中、自宅で${v}を飼育してはならない。`,
+    question: "自宅での飼育が禁止されていた動物は？"
+  },
+  {
+    title: "投稿文字数制限",
+    type: "number", min: 3, max: 140, step: 1, unit: "文字",
+    text: v => `一度に投稿できる文字数は${v}文字までとし、超過した場合は自動的にアカウントが凍結される。`,
+    question: "一度に投稿できる文字数の上限は？"
+  },
+  {
+    title: "運営の呼称",
+    type: "word", pool: ["大明神", "親分", "ボス", "マスター", "師匠", "陛下", "総統"],
+    text: v => `ユーザーは運営を「${v}様」と敬称をつけて呼ばなければならない。`,
+    question: "運営を呼ぶ際につけるべき敬称は「〇〇様」の〇〇部分、何とされていた？"
+  },
+  {
+    title: "メンテナンス曜日",
+    type: "word", pool: ["月", "火", "水", "木", "金", "土", "日"],
+    text: v => `本サービスは毎週${v}曜日の深夜2時から5時まで、予告なくメンテナンスを行う場合がある。`,
+    question: "予告なくメンテナンスが行われる可能性があるのは何曜日の深夜？"
+  },
+  {
+    title: "損害賠償上限",
+    type: "number", min: 1, max: 500, step: 1, unit: "円",
+    text: v => `運営の過失により損害が発生した場合であっても、賠償額の上限は${v}円とする。`,
+    question: "運営の過失による損害賠償の上限額は？"
+  },
+  {
+    title: "自動更新期間",
+    type: "number", min: 1, max: 99, step: 1, unit: "年",
+    text: v => `本契約は、解約の申し出がない限り自動的に${v}年間更新されるものとする。`,
+    question: "解約しない場合、契約は自動的に何年間更新される？"
+  },
+  {
+    title: "守秘義務の対象",
+    type: "word", pool: ["運営社長の趣味", "社内の飼い猫の名前", "開発者の血液型", "社員食堂のメニュー", "会議室の温度設定", "歴代パスワードの語呂合わせ"],
+    text: v => `ユーザーは本サービスを利用して知り得た「${v}」に関する情報を、いかなる場合も第三者に漏らしてはならない。`,
+    question: "第三者に漏らしてはならないとされていた守秘義務の対象は？"
+  },
+  {
+    title: "ポイント有効期限",
+    type: "number", min: 5, max: 120, step: 5, unit: "分",
+    text: v => `付与されたポイントの有効期限は${v}分間とし、期限を過ぎたポイントは自動的に消滅する。`,
+    question: "付与されたポイントの有効期限は何分間だった？"
+  },
+  {
+    title: "深夜のログイン回数制限",
+    type: "number", min: 1, max: 10, step: 1, unit: "回",
+    text: v => `深夜0時から6時の間、1ユーザーにつきログインできるのは${v}回までとする。`,
+    question: "深夜0時〜6時のログイン回数制限は何回までだった？"
+  },
+  {
+    title: "推奨環境",
+    type: "word", pool: ["Internet Explorer 6", "Netscape Navigator", "ガラケー標準ブラウザ", "テキストブラウザLynx", "自作ブラウザ", "紙とペン"],
+    text: v => `本サービスの動作を保証する環境は「${v}」のみとする。`,
+    question: "動作保証されている環境として挙げられていたのは？"
+  },
+  {
+    title: "サポート対応言語",
+    type: "word", pool: ["古代エジプト語", "ラテン語", "モールス信号", "独自方言の手話", "エスペラント語", "絵文字のみ"],
+    text: v => `サポート窓口への問い合わせは、${v}でのみ受け付けるものとする。`,
+    question: "サポートへの問い合わせに使用できるとされていたのは？"
+  },
+  {
+    title: "罰金の支払い方法",
+    type: "word", pool: ["現金書留", "タンス預金の直接持参", "物々交換", "労働奉仕", "サービス終了済みの電子マネー", "国内未対応の小切手"],
+    text: v => `罰金が発生した場合の支払い方法は「${v}」に限るものとする。`,
+    question: "罰金の支払い方法として指定されていたのは？"
+  },
+  {
+    title: "アカウント凍結までの警告回数",
+    type: "number", min: 1, max: 5, step: 1, unit: "回",
+    text: v => `同一の規約違反を${v}回繰り返した場合、事前通知なくアカウントを凍結する。`,
+    question: "アカウントが事前通知なく凍結されるのは、同一違反を何回繰り返した時だった？"
+  },
+  {
+    title: "再登録禁止期間",
+    type: "number", min: 1, max: 365, step: 1, unit: "日",
+    text: v => `退会したユーザーが再度本サービスへの登録を希望する場合、退会日から起算して${v}日間は登録を受け付けないものとする。`,
+    question: "退会後、再登録が禁止される期間は何日間だった？"
+  },
+  {
+    title: "無料期間中の解約違約金",
+    type: "number", min: 100, max: 9900, step: 100, unit: "円",
+    text: v => `無料お試し期間中であっても、期間終了前に解約する場合は違約金として${v}円を徴収するものとする。`,
+    question: "無料お試し期間中に解約した場合の違約金はいくらだった？"
+  },
+  {
+    title: "禁止される投稿形式",
+    type: "word", pool: ["俳句", "なぞなぞ", "早口言葉", "方言のみの文章", "擬音語だけの文章", "古文体の文章"],
+    text: v => `ユーザーは本サービスにおいて、${v}のみで構成された投稿を行ってはならない。`,
+    question: "投稿してはいけないとされていた形式は？"
+  },
+  {
+    title: "不具合報告への謝礼",
+    type: "word", pool: ["みかん一箱", "手書きの感謝状", "自家製の梅干し", "地元の特産品", "似顔絵", "替え歌"],
+    text: v => `本サービスの不具合を報告したユーザーに対し、運営は謝礼として${v}を贈呈する場合がある(義務ではない)。`,
+    question: "不具合報告への謝礼として挙げられていたものは？"
+  },
+  {
+    title: "サービス終了の予告期間",
+    type: "number", min: 0, max: 30, step: 1, unit: "日",
+    text: v => `本サービスを終了する場合、運営はサービス終了の${v}日前までに通知を行うものとする(ただし通知手段は問わない)。`,
+    question: "サービス終了の通知は何日前までに行うとされていた？"
+  }
+];
+
+const PREAMBLES = [
+  "本サービスの提供にあたり、運営は以下に定める事項についてユーザーに遵守を求めるものとし、ユーザーは本サービスを利用することをもって当該事項に同意したものとみなされる。",
+  "運営は、本サービスの円滑な運営及び健全性の維持を目的として、以下の事項を定めるものとし、ユーザーはあらかじめこれを承知した上で本サービスを利用するものとする。",
+  "本規約は、ユーザーと運営との間の権利義務関係を明確にすることを目的として定められるものであり、以下の定めはその一部を構成する。",
+  "以下の条項は、本サービスの適正な利用を確保するために設けられたものであり、ユーザーはその内容の軽重にかかわらず、これを遵守しなければならないものとする。",
+  "運営は、本サービスに関して生じうる一切の事象についてあらかじめ想定し得ないことを前提としつつ、以下の事項を定めるものとし、ユーザーはこれに一切異議を述べないものとする。"
+];
+
+function genNumberChoices(min, max, step, correct) {
+  const set = new Set([correct]);
+  while (set.size < 4) {
+    set.add(randInt(min, max, step));
+  }
+  return shuffle(Array.from(set));
+}
+function genWordChoices(pool, correct) {
+  const others = shuffle(pool.filter(w => w !== correct)).slice(0, 3);
+  return shuffle([correct, ...others]);
+}
+
+const TOTAL_ROUNDS = 5;
+let round = 0;
+let totalScore = 0;
+let roundStartTime = 0;
+let currentQuiz = null;
+let clockTick = 0;
+
+const startScreen = document.getElementById("startScreen");
+const gameScreen = document.getElementById("gameScreen");
+const endScreen = document.getElementById("endScreen");
+const termsBox = document.getElementById("termsBox");
+const progressBar = document.getElementById("progressBar");
+const agreeCheck = document.getElementById("agreeCheck");
+const nextBtn = document.getElementById("nextBtn");
+const roundTag = document.getElementById("roundTag");
+const quizOverlay = document.getElementById("quizOverlay");
+const questionText = document.getElementById("questionText");
+const choicesWrap = document.getElementById("choicesWrap");
+const feedbackWrap = document.getElementById("feedbackWrap");
+const feedbackText = document.getElementById("feedbackText");
+const roundScoreText = document.getElementById("roundScoreText");
+const continueBtn = document.getElementById("continueBtn");
+const resultText = document.getElementById("resultText");
+const clockEl = document.getElementById("clock");
+
+setInterval(() => {
+  clockTick++;
+  const h = String(Math.floor(clockTick/3600)).padStart(2,"0");
+  const m = String(Math.floor(clockTick/60)%60).padStart(2,"0");
+  const s = String(clockTick%60).padStart(2,"0");
+  clockEl.textContent = `${h}:${m}:${s}`;
+}, 1000);
+
+document.getElementById("startBtn").addEventListener("click", () => {
+  totalScore = 0;
+  round = 0;
+  startScreen.classList.add("hidden");
+  gameScreen.classList.remove("hidden");
+  nextRound();
+});
+
+document.getElementById("retryBtn").addEventListener("click", () => {
+  endScreen.classList.add("hidden");
+  totalScore = 0;
+  round = 0;
+  gameScreen.classList.remove("hidden");
+  nextRound();
+});
+
+function nextRound() {
+  round++;
+  roundTag.textContent = `第${round} / ${TOTAL_ROUNDS} ラウンド`;
+  agreeCheck.checked = false;
+  agreeCheck.disabled = true;
+  nextBtn.disabled = true;
+  progressBar.style.width = "0%";
+
+  const order = shuffle(CLAUSE_TEMPLATES).slice(0, 15);
+  const quizIndex = randInt(2, order.length - 2, 1);
+
+  let html = "";
+  let quizData = null;
+
+  order.forEach((tmpl, i) => {
+    let value, choices;
+    if (tmpl.type === "number") {
+      value = randInt(tmpl.min, tmpl.max, tmpl.step);
+      choices = genNumberChoices(tmpl.min, tmpl.max, tmpl.step, value).map(v => v + tmpl.unit);
+    } else {
+      value = pick(tmpl.pool);
+      choices = genWordChoices(tmpl.pool, value);
+    }
+    html += `<p>第${i + 1}条(${tmpl.title})　${pick(PREAMBLES)}${tmpl.text(value)}</p>`;
+
+    if (i === quizIndex) {
+      quizData = {
+        question: tmpl.question,
+        correct: tmpl.type === "number" ? (value + tmpl.unit) : value,
+        choices: choices
+      };
+    }
+  });
+
+  termsBox.innerHTML = html;
+  termsBox.scrollTop = 0;
+  currentQuiz = quizData;
+
+  termsBox.onscroll = () => {
+    const p = termsBox.scrollTop / (termsBox.scrollHeight - termsBox.clientHeight);
+    progressBar.style.width = Math.min(100, Math.round(p * 100)) + "%";
+    if (termsBox.scrollTop + termsBox.clientHeight >= termsBox.scrollHeight - 4) {
+      agreeCheck.disabled = false;
+    }
+  };
+
+  agreeCheck.onchange = () => {
+    nextBtn.disabled = !agreeCheck.checked;
+  };
+
+  roundStartTime = performance.now();
+}
+
+nextBtn.addEventListener("click", () => {
+  showQuiz();
+});
+
+function showQuiz() {
+  quizOverlay.classList.remove("hidden");
+  feedbackWrap.classList.add("hidden");
+  document.getElementById("qcontent").classList.remove("hidden");
+  questionText.textContent = currentQuiz.question;
+  choicesWrap.innerHTML = "";
+  currentQuiz.choices.forEach(choice => {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.textContent = choice;
+    btn.addEventListener("click", () => answerQuiz(choice, btn));
+    choicesWrap.appendChild(btn);
+  });
+}
+
+function answerQuiz(choice, btnEl) {
+  const elapsedSec = (performance.now() - roundStartTime) / 1000;
+  const correct = choice === currentQuiz.correct;
+
+  document.querySelectorAll(".choice").forEach(b => {
+    b.disabled = true;
+    if (b.textContent === currentQuiz.correct) b.classList.add("correct");
+    if (b === btnEl && !correct) b.classList.add("wrong");
+  });
+
+  let roundScore = 0;
+  if (correct) {
+    roundScore = Math.max(50, Math.round(400 - elapsedSec * 5));
+  }
+  totalScore += roundScore;
+
+  setTimeout(() => {
+    document.getElementById("qcontent").classList.add("hidden");
+    feedbackWrap.classList.remove("hidden");
+    feedbackText.textContent = correct
+      ? `正解！(所要 ${elapsedSec.toFixed(1)}秒)`
+      : `不正解…正解は「${currentQuiz.correct}」でした`;
+    roundScoreText.textContent = `このラウンドのスコア: ${roundScore}点`;
+  }, 700);
+}
+
+continueBtn.addEventListener("click", () => {
+  quizOverlay.classList.add("hidden");
+  if (round >= TOTAL_ROUNDS) {
+    finishGame();
+  } else {
+    nextRound();
+  }
+});
+
+function finishGame() {
+  gameScreen.classList.add("hidden");
+  endScreen.classList.remove("hidden");
+
+  let comment;
+  if (totalScore >= 1700) comment = "熟読の鬼。契約書も怖くない。";
+  else if (totalScore >= 1200) comment = "ちゃんと読んでるタイプ。偉い。";
+  else if (totalScore >= 500) comment = "だいたい流し読み勢。";
+  else comment = "同意ボタン連打で人生を過ごしてきたタイプ。";
+
+  resultText.innerHTML = `合計スコア: <b>${totalScore}</b><br><br>${comment}`;
+}
+</script>
+
+</body>
+</html>
